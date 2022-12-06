@@ -94,6 +94,8 @@ struct thread
     struct list_elem elem;              /* List element. */
     struct list_elem elem2;
 
+   struct thread *locker;
+   struct lock *blocked;
     int bp;
     struct list donors;
 

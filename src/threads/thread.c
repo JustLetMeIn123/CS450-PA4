@@ -503,6 +503,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+  t->locker = NULL;
+  t->blocked = NULL;
   t->bp = priority;
   list_init (&t->donors);
 

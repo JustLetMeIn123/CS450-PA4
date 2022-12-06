@@ -356,7 +356,26 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
+  enum intr_level old_level;
+
+  old_level = intr_disable ();
+  if(list_empty(&thread_current()->donors) || new_priority > thread_current()->priority)
+  {
+    thread_current()->priority = new_priority; 
+    thread_current()->bp = new_priority;
+  }
+  else
+    thread_current()->bp = new_priority;
+
+  if(!list_empty(&ready_list))
+  {
+    struct list_elem *front = list_front(&ready_list);
+    struct thread *fthread = list_entry (front, struct thread, elem);
+
+    if(fthread->priority > thread_current ()->priority)
+      thread_yield();
+  }
+  intr_set_level (old_level);
 }
 
 /* Returns the current thread's priority. */
@@ -484,6 +503,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+  t->bp = priority;
+  list_init (&t->donors);
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);

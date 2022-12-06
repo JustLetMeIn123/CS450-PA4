@@ -170,6 +170,7 @@ thread_create (const char *name, int priority,
   struct kernel_thread_frame *kf;
   struct switch_entry_frame *ef;
   struct switch_threads_frame *sf;
+  enum intr_level old_level;
   tid_t tid;
 
   ASSERT (function != NULL);
@@ -200,6 +201,12 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
+
+  old_level = intr_disable ();
+  if(t->priority > thread_current()->priority)
+    thread_yield();
+
+  intr_set_level (old_level);
 
   return tid;
 }
@@ -238,6 +245,7 @@ thread_unblock (struct thread *t)
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
   list_push_back (&ready_list, &t->elem);
+  list_sort (&ready_list, cmp_priority, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -308,10 +316,23 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
+  {
     list_push_back (&ready_list, &cur->elem);
+    list_sort (&ready_list, cmp_priority, NULL);
+  }
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
+}
+
+bool
+cmp_priority(const struct list_elem *first, const struct list_elem *second, void *aux)
+{
+  struct thread *fthread = list_entry (first, struct thread, elem);
+  struct thread *sthread = list_entry (second, struct thread, elem);
+
+  return fthread->priority > sthread->priority;
+
 }
 
 /* Invoke function 'func' on all threads, passing along 'aux'.

@@ -94,9 +94,9 @@ struct thread
     struct list_elem elem;              /* List element. */
     struct list_elem elem2;
 
-   struct thread *locker;
-   struct lock *blocked;
-    int bp;
+    struct thread *lock_holder;
+    struct lock *blocked_on;
+    int act_priority;
     struct list donors;
 
 #ifdef USERPROG
@@ -113,7 +113,7 @@ struct thread
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 
-bool cmp_priority(const struct list_elem *first, const struct list_elem *second, void *aux);
+bool sort_priority(const struct list_elem *first, const struct list_elem *second, void *aux);
 
 void thread_init (void);
 void thread_start (void);

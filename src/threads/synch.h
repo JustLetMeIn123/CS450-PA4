@@ -41,7 +41,7 @@ void cond_wait (struct condition *, struct lock *);
 void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
 
-bool cmp_cond_priority(const struct list_elem *first, const struct list_elem *second, void *aux);
+bool sort_priority_cond(const struct list_elem *first, const struct list_elem *second, void *aux);
 
 /* Optimization barrier.
 

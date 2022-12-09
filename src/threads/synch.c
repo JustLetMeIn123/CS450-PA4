@@ -222,12 +222,10 @@ lock_acquire (struct lock *lock)
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
 
-  if(lock->holder)
-  {
+  if (lock -> holder)
     lock_acq_helper (lock);
-  }
   else
-    thread_current()->lock_holder = NULL;
+    thread_current() -> lock_holder = NULL;
 
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
@@ -249,11 +247,9 @@ lock_try_acquire (struct lock *lock)
 
   success = sema_try_down (&lock->semaphore);
   if (success)
-    lock->holder = thread_current ();
+    lock -> holder = thread_current ();
   else
-  {
     lock_acq_helper (lock);
-  }
   return success;
 }
 
@@ -295,18 +291,11 @@ lock_release (struct lock *lock)
       }
     }
     if (max_priority_thread != NULL)
-    {
-      if (thread_current() -> act_priority > max_priority_thread -> priority)
-        thread_set_priority (thread_current() -> act_priority);
-      else
-      {
-        thread_current() -> priority = max_priority_thread -> priority;
-        thread_yield();
-      }
-    }
+      thread_current() -> priority = max_priority_thread -> priority;
     else
       thread_set_priority (thread_current() -> act_priority);
   }
+  thread_yield ();
 }
 
 /* Returns true if the current thread holds LOCK, false

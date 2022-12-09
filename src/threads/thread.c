@@ -203,8 +203,8 @@ thread_create (const char *name, int priority,
   thread_unblock (t);
 
   old_level = intr_disable ();
-  if(t->priority > thread_current()->priority)
-    thread_yield();
+  if (t -> priority > thread_current() -> priority)
+    thread_yield ();
 
   intr_set_level (old_level);
 
@@ -376,7 +376,11 @@ thread_set_priority (int new_priority)
 int
 thread_get_priority (void) 
 {
-  return thread_current ()->priority;
+  if (thread_current() -> priority > thread_current() -> act_priority)
+    return thread_current ()->priority;
+  else {
+    return thread_current() -> act_priority;
+  }
 }
 
 /* Sets the current thread's nice value to NICE. */

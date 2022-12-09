@@ -32,7 +32,7 @@ Alex Cronin <croninja@dukes.jmu.edu>
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
 In thread struct in thread.h:
-    struct list_elem elem2; –List element used to list through the donors list.
+    struct list_elem elem2; –List element used to loop through the donors list.
     struct thread *lock_holder; -Keeps track of the thread that is currently holding the lock.
     struct lock *blocked_on; -Keeps track of the lock that the thread is blocked on.
     int act_priority; -Keeps track of the actual, non donated priority of the thread.

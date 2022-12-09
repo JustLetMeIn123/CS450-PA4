@@ -281,8 +281,8 @@ lock_release (struct lock *lock)
       struct thread *curr = list_entry (e, struct thread, elem2);
       if (curr -> blocked_on == lock)
       {
-          list_remove(e);
-          curr -> blocked_on = NULL;
+        list_remove(e);
+        curr -> blocked_on = NULL;
       }
       else if (curr -> priority > max_priority)
       {

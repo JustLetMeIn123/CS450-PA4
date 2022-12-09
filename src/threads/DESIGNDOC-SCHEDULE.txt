@@ -1,0 +1,74 @@
+        +------------------------------+
+      	  |          CS 450              |
+         |PROJECT 4: PRIORITY SCHEDULING|
+         |      DESIGN DOCUMENT     	 |
+         +------------------------------+
+
+
+---- GROUP ----
+
+>> Fill in the names and email addresses of your group members.
+
+Jackson Brantley <brantlja@dukes.jmu.edu>
+Justin Park <park3jw@dukes.jmu.edu>
+Alex Cronin <croninja@dukes.jmu.edu>
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, please give
+>> them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+                        PRIORITY SCHEDULING
+                         ===================
+
+---- DATA STRUCTURES ----
+
+>> B1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+In thread struct in thread.h:
+    struct list_elem elem2; –List element used to list through the donors list.
+    struct thread *lock_holder; -Keeps track of the thread that is currently holding the lock.
+    struct lock *blocked_on; -Keeps track of the lock that the thread is blocked on.
+    int act_priority; -Keeps track of the actual, non donated priority of the thread.
+    struct list donors; -Keeps track of all the threads that are donating their priority to this thread.
+
+
+>> B2: Explain the data structure used to track priority donation.
+The data structure used to track priority donation is a list called donors within each thread. Every time a thread (thread 1) donates its priority to another thread (thread 2), thread 2 adds thread 1 to its list of donors. Thread 2 then removes thread 1 from its donors list whenever the lock thread 2 required is released from thread 2.
+
+---- ALGORITHMS ----
+
+>> B3: How do you ensure that the highest priority thread waiting for
+>> a lock, semaphore, or condition variable wakes up first?
+
+We ensure that the highest priority thread waiting for a lock, semaphore, or condition variable wakes up first by sorting the ready list by highest priority. This assures that the next thread that is scheduled is the one with the highest priority.
+
+>> B4: Describe the sequence of events when a call to lock_acquire()
+>> causes a priority donation.  How is nested donation handled?
+
+When a thread (thread 1) tries to acquire a lock that already has an owner (thread 2), lock_acquire() checks which thread has the highest priority. If thread 1 has the higher priority, thread 2’s priority is set to thread 1’s priority and thread 1 is added to thread 2’s donors list. In the event of nested donation, each thread has a struct called lock_holder which signifies which thread owns the lock. If lock_holder is NULL, that means the current thread owns the lock. If there’s a chain of threads requiring the lock, each thread points to the previous thread that wanted the lock (like this: child_3 > child_2 > child_1 > lock_owner). We then iterate through this chain swapping priorities such that the owner has the highest priority and the last child has the lowest.
+
+>> B5: Describe the sequence of events when lock_release() is called
+>> on a lock that a higher-priority thread is waiting for.
+
+We have a field in each thread called blocked_on which keeps track of the lock each thread needs to run. After the lock is released from a thread, we loop through its list of donors, and if one of its donors was waiting on that lock we remove it from the donors list. Then we call thread_yield() to sort the ready list again such that the higher priority thread can be scheduled.
+
+---- SYNCHRONIZATION ----
+
+>> B6: Describe a potential race in thread_set_priority() and explain
+>> how your implementation avoids it.  Can you use a lock to avoid
+>> this race?
+
+A potential race condition in thread_set_priority() is that a thread can be donated a priority at the same time its priority is set. The only way we avoid this is by disabling interrupts, but we should have used a lock to ensure a priority donation is not being done at the same time a thread’s priority is being changed.
+
+---- RATIONALE ----
+
+>> B7: Why did you choose this design?  In what ways is it superior to
+>> another design you considered?
+
+We chose this design because it made more sense to put all of the lock priority donation handling in the lock_acquire and lock_released functions. In terms of priority scheduling, we debated creating 64 different queues and scheduling threads into each queue depending on their priority, but ultimately decided it was just too much work as opposed to sorting the one ready list every time a thread is added. We understand it is very inefficient to sort the ready list like this but on the upside there’s 63 less list structures.

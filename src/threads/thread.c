@@ -355,12 +355,10 @@ void
 thread_set_priority (int new_priority) 
 {
   enum intr_level old_level;
-
   old_level = intr_disable ();
 
-  // If the thread has no donors and the new priority is greater,
-  // change both the effective priority and actual thread priority.
-  if (list_empty(&thread_current() -> donors) || new_priority > thread_current() -> priority)
+  // If the thread has no donors change both the effective priority and actual thread priority.
+  if (list_empty(&thread_current() -> donors))
   {
     thread_current() -> priority = new_priority;
     thread_current() -> act_priority = new_priority;
